@@ -19,3 +19,16 @@ jobs:
     - name: Lint
       run: |
         pipenv run pylint --rcfile=./pylintrc **/*.py
+    - uses: actions/download-artifact@v2
+      with:
+        name: result_json
+    - name: Main
+      run: |
+        pipenv run start "${ARG}"
+      env:
+        ARG: .products.json
+        SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
+    - uses: actions/upload-artifact@v2
+      with:
+        name: result_json
+        path: .products.json
