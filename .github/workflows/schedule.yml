@@ -22,7 +22,7 @@ jobs:
       with:
         name: result_json
     - name: Main
-      if: succeeded() || failed()
+      if: success() || failure()
       run: |
         pipenv run start "${ARG}"
       env:
