@@ -3,7 +3,7 @@ name: Lint
 on: [push]
 
 jobs:
-  build:
+  lint:
     runs-on: ubuntu-18.04
     steps:
     - uses: actions/checkout@v2
@@ -24,3 +24,4 @@ jobs:
         pipenv run start "${ARG}"
       env:
         ARG: .products.json
+        SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
