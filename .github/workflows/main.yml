@@ -19,6 +19,13 @@ jobs:
     - name: Lint
       run: |
         pipenv run pylint --rcfile=./pylintrc **/*.py
+    - name: Cache result
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.result_json }}
+        key: result-json
+      env:
+        result_json: .products.json
     - name: Main
       run: |
         pipenv run start "${ARG}"
