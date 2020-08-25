@@ -74,7 +74,8 @@ class Helper:
         return ArrivalType.RESTOCK.value
 
     @classmethod
-    def should_notify(cls, product_soup: BeautifulSoup, stored_product: Union[Product, None]) -> bool:
+    def should_notify(cls, product_soup: BeautifulSoup,
+        stored_product: Union[Product, None]) -> bool:
         if stored_product is None:
             return True
         if ProductState.SOLDOUT.value in stored_product['labels']:
