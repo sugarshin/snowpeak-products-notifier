@@ -1,0 +1,40 @@
+name: Scheduler
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+
+jobs:
+  notify:
+    runs-on: ubuntu-18.04
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v2
+      with:
+        python-version: '3.8.5'
+    - uses: dschep/install-pipenv-action@v1
+      with:
+        version: 2020.8.13
+    - name: Install dependencies
+      run: |
+        pipenv sync
+    - name: Get Date
+      id: get-date
+      run: |
+        echo "::set-output name=date::$(/bin/date -u "+%Y%m%d%H%M%S")"
+      shell: bash
+    - name: Cache result
+      uses: actions/cache@v2
+      with:
+        path: ${{ env.result_json }}
+        key: result-json-${{ steps.get-date.outputs.date }}
+        restore-keys: |
+          result-json-
+      env:
+        result_json: .products.json
+    - name: Main
+      run: |
+        pipenv run start "${ARG}"
+      env:
+        ARG: .products.json
+        SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
