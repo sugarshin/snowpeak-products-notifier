@@ -30,6 +30,7 @@ jobs:
         ARG: .products.json
         SLACK_API_TOKEN: ${{ secrets.SLACK_API_TOKEN }}
     - uses: actions/upload-artifact@v2
+      if: always()
       with:
         name: result_json
         path: .products.json
