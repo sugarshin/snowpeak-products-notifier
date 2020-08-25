@@ -18,9 +18,10 @@ jobs:
     - name: Install dependencies
       run: |
         pipenv sync
-    - uses: actions/download-artifact@v2
+    - uses: dawidd6/action-download-artifact@v2
       with:
         name: result_json
+        workflow: main.yml
     - name: Main
       if: success() || failure()
       run: |
