@@ -20,6 +20,7 @@ jobs:
       run: |
         pipenv run pylint --rcfile=./pylintrc **/*.py
     - name: Get Date
+      id: get-date
       run: |
         echo "::set-output name=date::$(/bin/date -u "+%Y%m%d%H%M%S")"
       shell: bash
