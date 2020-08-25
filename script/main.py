@@ -141,7 +141,8 @@ def main():
     slack_message = SlackMessage(environ["SLACK_API_TOKEN"], "#snowpeak")
     products = Products(PRODUCT_DATA_JSON)
 
-    logger.debug(products.stored_data["date"])
+    if products.stored_data is not None:
+        logger.debug(products.stored_data["date"])
 
     # ?q = %3Acreationtime & page = 1
     base_params = {"q": ":creationtime"}
