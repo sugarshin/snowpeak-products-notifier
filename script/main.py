@@ -1,5 +1,4 @@
 import sys
-import copy
 from enum import Enum
 from typing import List, TypedDict, Union
 import json
@@ -25,12 +24,11 @@ if len(args) < 2:
 TARGET_ORIGIN = 'https://ec.snowpeak.co.jp'
 # スノーピーク（アウトドア・キャンプ用品の通販）TOP > キャンプ
 TARTGET_URL = TARGET_ORIGIN + \
-    '/snowpeak/ja/%E3%82%AD%E3%83%A3%E3%83%B3%E3%83%97/c/2010000' # pylint: disable=line-too-long
-PAGINATION_CLASS_NAME = 'pagination'
+    '/snowpeak/ja/%E3%82%AD%E3%83%A3%E3%83%B3%E3%83%97/c/2010000'
 PRODUCTS_CONTAINER_SELECTOR = '.results-all-product.productItemForList'
 PRODUCTS_SELECTOR = PRODUCTS_CONTAINER_SELECTOR + ' > div'
 NO_RESULT_FOUND_SELECTOR = '.category-empty'
-PRODUCT_DATA_JSON = args[1]  # '.product_data.json'
+PRODUCT_DATA_JSON = args[1] # '.product_data.json'
 
 class Product(TypedDict):
     id: str
@@ -136,28 +134,30 @@ def process_product(product_soup: BeautifulSoup, products: Products,
             arrival_type = Helper.get_arrival_type(stored_product)
             slack_message.add_product(name, TARGET_ORIGIN + href, arrival_type)
 
-def main():
+def get_all_products() -> List[BeautifulSoup]:
     user_agent = UserAgent()
-    slack_message = SlackMessage(environ["SLACK_API_TOKEN"], "#snowpeak")
-    products = Products(PRODUCT_DATA_JSON)
 
-    if products.stored_data is not None:
-        logger.debug(products.stored_data["date"])
-
-    # ?q = %3Acreationtime & page = 1
-    base_params = {"q": ":creationtime"}
+    # ?q=%3Acreationtime&page=0
     page = 0
+    product_soup_list: List[BeautifulSoup] = []
     while True:
-        params = copy.copy(base_params)
+        params = {"q": ":creationtime"}
         params["page"] = page
         _u = user_agent.chrome
         logger.debug(_u)
         headers = {'User-Agent': _u}
-        res = requests.get(TARTGET_URL, headers=headers, params=params)
-        logger.debug(res.url)
+        try:
+            res = requests.get(TARTGET_URL, headers=headers, params=params, timeout=10)
+            logger.debug(res.url)
+        except requests.exceptions.RequestException as exception:
+            logger.debug(exception)
+            # if some page error occurred do not anything next steps
+            return []
+
         if res.status_code != 200:
-            logger.debug('target page is not working')
-            continue
+            logger.debug("%s page is not working", res.url)
+            # if some page error occurred do not anything next steps
+            return []
 
         soup = BeautifulSoup(res.text, 'lxml')
 
@@ -166,18 +166,30 @@ def main():
         if len(no_result_found) != 0:
             break
 
-        product_soup_list = soup.body.select(PRODUCTS_SELECTOR)
+        product_soup_list += soup.body.select(PRODUCTS_SELECTOR)
+        page += 1
 
+    return product_soup_list
+
+def main():
+    products = Products(PRODUCT_DATA_JSON)
+
+    if products.stored_data is not None:
+        logger.debug(products.stored_data["date"])
+
+    product_soup_list = get_all_products()
+    logger.debug(product_soup_list)
+    slack_message = SlackMessage(environ["SLACK_API_TOKEN"], environ["SLACK_CHANNEL"])
+
+    if len(product_soup_list) > 0:
         for product_soup in product_soup_list:
             process_product(product_soup, products, slack_message)
 
-        page += 1
+        with open(PRODUCT_DATA_JSON, 'w') as _f:
+            json.dump(products.data, _f, ensure_ascii=False)
 
-    with open(PRODUCT_DATA_JSON, 'w') as _f:
-        json.dump(products.data, _f, ensure_ascii=False)
-
-    if len(slack_message.blocks) > 0:
-        slack_message.send_message()
+        if len(slack_message.blocks) > 0:
+            slack_message.send_message()
 
 if __name__ == '__main__':
     sys.exit(main())
