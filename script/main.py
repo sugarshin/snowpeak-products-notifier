@@ -4,13 +4,14 @@ from typing import List, TypedDict, Union
 import json
 from os import environ, path
 import time
+from datetime import datetime
 import requests
 from bs4 import BeautifulSoup
 from fake_useragent import UserAgent
 from slack import WebClient
 from slack.web.base_client import SlackResponse
 from slackblocks import Message, SectionBlock, Text
-from pydash import find
+from pydash import find, chunk
 from dotenv import load_dotenv
 from logger import logger
 
@@ -115,9 +116,14 @@ class SlackMessage:
         text = Text(text="%s!!!\n\n> <%s|%s>" % (arrival_type, url, name))
         self.blocks.append(SectionBlock(text=text))
 
-    def send_message(self) -> SlackResponse:
-        message = Message(channel=self.channel, blocks=self.blocks)
-        return self.client.chat_postMessage(**message)
+    def send_message(self) -> List[SlackResponse]:
+        # blocks are no more than 50 items allowed.
+        blocks_list = chunk(self.blocks, 50)
+        res: List[SlackResponse] = []
+        for blocks in blocks_list:
+            message = Message(channel=self.channel, blocks=blocks)
+            res.append(self.client.chat_postMessage(**message))
+        return res
 
 def process_product(product_soup: BeautifulSoup, products: Products,
     slack_message: SlackMessage) -> None:
@@ -175,10 +181,11 @@ def main():
     products = Products(PRODUCT_DATA_JSON)
 
     if products.stored_data is not None:
-        logger.debug(products.stored_data["date"])
+        previous_timestamp = datetime.utcfromtimestamp(products.stored_data["date"])
+        logger.debug(previous_timestamp)
 
     product_soup_list = get_all_products()
-    logger.debug(product_soup_list)
+
     slack_message = SlackMessage(environ["SLACK_API_TOKEN"], environ["SLACK_CHANNEL"])
 
     if len(product_soup_list) > 0:
