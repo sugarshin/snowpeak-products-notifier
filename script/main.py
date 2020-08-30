@@ -75,8 +75,8 @@ class Helper:
     @classmethod
     def should_notify(cls, product_soup: BeautifulSoup,
         stored_product: Union[Product, None]) -> bool:
-        if stored_product is None:
-            return True
+        # if stored_product is None:
+        #     return True
         if ProductState.SOLDOUT.value in stored_product['labels']:
             labels = Helper.pick_label_texts(product_soup)
             if ProductState.SOLDOUT.value not in labels:
