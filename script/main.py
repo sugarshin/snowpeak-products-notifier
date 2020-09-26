@@ -117,13 +117,16 @@ class SlackMessage:
         self.blocks.append(SectionBlock(text=text))
 
     def send_message(self) -> List[SlackResponse]:
+        parent_message = self.client.chat_postMessage(channel=self.channel, text="＊Snow Peak 入荷情報＊")
+
         # blocks are no more than 50 items allowed.
         blocks_list = chunk(self.blocks, 50)
-        res: List[SlackResponse] = []
+        parent_message_ts = parent_message['ts']
         for blocks in blocks_list:
             message = Message(channel=self.channel, blocks=blocks)
-            res.append(self.client.chat_postMessage(**message))
-        return res
+            self.client.chat_postMessage(**message, thread_ts=parent_message_ts)
+
+        return parent_message
 
 def process_product(product_soup: BeautifulSoup, products: Products,
     slack_message: SlackMessage) -> None:
@@ -196,7 +199,8 @@ def main():
             json.dump(products.data, _f, ensure_ascii=False)
 
         if len(slack_message.blocks) > 0:
-            slack_message.send_message()
+            res = slack_message.send_message()
+            logger.info(res)
 
 if __name__ == '__main__':
     sys.exit(main())
