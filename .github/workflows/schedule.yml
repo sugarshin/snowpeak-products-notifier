@@ -1,8 +1,13 @@
 name: Scheduler
 
+# on:
+#   schedule:
+#     - cron: '*/15 * * * *'
+
 on:
-  schedule:
-    - cron: '*/15 * * * *'
+  push:
+    branches:
+      - production
 
 jobs:
   notify:
