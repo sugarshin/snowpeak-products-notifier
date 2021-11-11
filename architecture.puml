@@ -1,0 +1,34 @@
+@startuml architecture
+autonumber
+skinparam BoxPadding 20
+skinparam ParticipantPadding 20
+
+database "Git repository" as repo
+participant "Slack" as slack
+
+box GitHub Actions
+control "Scheduler" as sche
+participant "Actions Runner" as ghar
+database "Artifacts Storage" as ars
+end box
+
+participant "Snow Peak Online Store" as sp
+
+loop every few minites
+  sche -> ghar: triggers workflow
+  activate ghar
+  ghar -> repo: clone sourcecodes
+  ghar <-- repo
+  ghar -> ars: download previous scraping results
+  ghar <-- ars
+  ghar -> sp: GET request to access product item pages to get item data
+  ghar <-- sp: HTML
+  ghar -> ghar: parse HTML and check items
+  ghar -> ars: store new scraping results
+  alt if there new or restock item
+    ghar -> slack: notifies
+  end
+  deactivate ghar
+end
+
+@enduml

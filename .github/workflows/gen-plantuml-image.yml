@@ -1,0 +1,28 @@
+name: Generate PlantUML Diagrams
+on:
+  push:
+    paths:
+      - '**.puml'
+jobs:
+  generate-image:
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Generate PNG Diagram
+        uses: cloudbees/plantuml-github-action@929b064eb53747773f132e1170c54733019ff24e
+        with:
+            args: -v -tpng architecture.puml
+      - name: Upload PNG Diagram as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: architecture_png
+          path: architecture.png
+      - name: Push Local Changes
+        if: github.ref == 'refs/heads/main' && success()
+        uses: stefanzweifel/git-auto-commit-action@v4.1.2 
+        with: 
+          commit_user_name: "GitHub Actions"
+          commit_user_email: "s+ci@sugarshin.net"
+          commit_author: "GitHub Actions <s+ci@sugarshin.net>"
+          commit_message: "Generate PNG images for PlantUML diagrams" 
+          branch: ${{ github.head_ref }}
