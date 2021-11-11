@@ -6,8 +6,6 @@ on:
 jobs:
   generate-image:
     runs-on: ubuntu-18.04
-    env:
-        UML_FILES: ".puml"
     steps:
       - uses: actions/checkout@v2
       - name: Generate PNG Diagram
