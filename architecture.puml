@@ -1,7 +1,7 @@
 @startuml architecture
 autonumber
-skinparam BoxPadding 20
-skinparam ParticipantPadding 20
+skinparam BoxPadding 32
+skinparam ParticipantPadding 32
 
 database "Git repository" as repo
 participant "Slack" as slack

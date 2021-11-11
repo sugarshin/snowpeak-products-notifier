@@ -18,7 +18,7 @@ jobs:
           name: architecture_png
           path: architecture.png
       - name: Push Local Changes
-        if: github.ref == 'refs/heads/main' && success()
+        if: github.ref == 'refs/heads/master' && success()
         uses: stefanzweifel/git-auto-commit-action@v4.1.2 
         with: 
           commit_user_name: "GitHub Actions"
