@@ -3,14 +3,15 @@ autonumber
 skinparam BoxPadding 32
 skinparam ParticipantPadding 32
 
-database "Git repository" as repo
-participant "Slack" as slack
+database "Git Repository" as repo
 
 box GitHub Actions
-control "Scheduler" as sche
-participant "Actions Runner" as ghar
-database "Artifacts Storage" as ars
+  control "Scheduler" as sche
+  participant "Actions Runner" as ghar
+  database "Artifacts Storage" as ars
 end box
+
+participant "Slack" as slack
 
 participant "Snow Peak Online Store" as sp
 
