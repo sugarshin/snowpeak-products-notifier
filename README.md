@@ -1,6 +1,6 @@
-# sp-product-arrival-notifier
+# snowpeak-products-notifier
 
-![Scheduler](https://github.com/sugarshin/sp-product-arrival-notifier/workflows/Scheduler/badge.svg)
+[![Scheduler](https://github.com/sugarshin/snowpeak-products-notifier/actions/workflows/schedule.yml/badge.svg)](https://github.com/sugarshin/snowpeak-products-notifier/actions/workflows/schedule.yml)
 
 > Notify that [Snow Peak](https://www.snowpeak.co.jp/) product has restocked in official online store
 
